@@ -15,6 +15,7 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 1.8
+      - run: mvn -B -Pprepare validate --file pom.xml
       - run: mvn -B package --file pom.xml
       - run: mkdir staging && cp target/*.kar staging
       - name: Upload the artifacts

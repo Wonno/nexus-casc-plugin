@@ -30,6 +30,11 @@ Requires:
 * Maven (3.6.3 or higher preferred)
 * docker-compose (only if running the integration tests)
 
+Prepararation
+```bash
+mvn -Pprepare validate
+```
+
 To just build the `.kar` archive:
 ```bash
 mvn package
