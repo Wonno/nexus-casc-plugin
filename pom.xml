@@ -24,6 +24,12 @@
         <snakeyaml.version>1.26</snakeyaml.version>
 
         <junit-jupiter.version>5.6.2</junit-jupiter.version>
+
+        <nexus-ldap-plugin.systemPath>
+            ${java.io.tmpdir}/nexus-binaries/nexus-${nexus.version}/system/com/sonatype/nexus/plugins/nexus-ldap-plugin/${nexus.version}/nexus-ldap-plugin-${nexus.version}.jar
+        </nexus-ldap-plugin.systemPath>
+        <nexus.binary.md5>70fb16513ef5d3ad1c3b311bd694313c</nexus.binary.md5>
+        <nexus.binary.url>https://download.sonatype.com/nexus/3/nexus-${nexus.version}-unix.tar.gz</nexus.binary.url>
     </properties>
 
     <dependencies>
@@ -74,6 +80,14 @@
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
             <version>${snakeyaml.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.sonatype.nexus.plugins</groupId>
+            <artifactId>nexus-ldap-plugin</artifactId>
+            <version>${nexus.version}</version>
+            <scope>system</scope>
+            <systemPath>${nexus-ldap-plugin.systemPath}</systemPath>
         </dependency>
 
         <dependency>
@@ -233,8 +247,74 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <configuration>
+                    <filesets>
+                        <fileset>
+                            <directory>${java.io.tmpdir}/nexus-binaries</directory>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>ldap</id>
+            <activation>
+                <file>
+                    <exists>${nexus-ldap-plugin.systemPath}</exists>
+                </file>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.sonatype.nexus.plugins</groupId>
+                    <artifactId>nexus-ldap-plugin</artifactId>
+                    <version>${nexus.version}</version>
+                    <scope>system</scope>
+                    <systemPath>${nexus-ldap-plugin.systemPath}</systemPath>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>prepare</id>
+            <properties>
+                <enforcer.skip>true</enforcer.skip>
+            </properties>
+            <activation>
+                <file>
+                    <missing>${nexus-ldap-plugin.systemPath}</missing>
+                </file>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.googlecode.maven-download-plugin</groupId>
+                        <artifactId>download-maven-plugin</artifactId>
+                        <version>1.6.5</version>
+                        <executions>
+                            <execution>
+                                <phase>validate</phase>
+                                <goals>
+                                    <goal>wget</goal>
+                                </goals>
+                                <configuration>
+                                    <runOnlyAtRoot>true</runOnlyAtRoot>
+                                    <url>${nexus.binary.url}</url>
+                                    <outputFileName>nexus.tar.gz</outputFileName>
+                                    <outputDirectory>${java.io.tmpdir}/nexus-binaries</outputDirectory>
+                                    <unpack>true</unpack>
+                                    <md5>${nexus.binary.md5}</md5>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
     <repositories>
         <repository>
