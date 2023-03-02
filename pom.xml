@@ -373,6 +373,7 @@
             <url>file://${project.basedir}/mvnrepo</url>
             <releases>
                 <enabled>true</enabled>
+                <checksumPolicy>ignore</checksumPolicy>
             </releases>
         </repository>
     </repositories>
