@@ -71,6 +71,7 @@
         <cfg.repopath>${project.basedir}/mvnrepo</cfg.repopath>
         <plg.version.download-maven-plugin>1.6.5</plg.version.download-maven-plugin>
         <plg.version.maven-install-plugin>3.1.0</plg.version.maven-install-plugin>
+        <plg.version.maven-clean-plugin>3.2.0</plg.version.maven-clean-plugin>
     </properties>
 
     <dependencyManagement>
@@ -515,7 +516,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-clean-plugin</artifactId>
-                        <version>3.2.0</version>
+                        <version>${plg.version.maven-clean-plugin}</version>
                         <executions>
                             <execution>
                                 <id>clean-cache-local-repo</id>
