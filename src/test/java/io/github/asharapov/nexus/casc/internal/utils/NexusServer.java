@@ -9,7 +9,10 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
+import java.io.File;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
@@ -23,7 +26,7 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class NexusServer extends GenericContainer<NexusServer> {
 
-    private static final DockerImageName IMAGE = DockerImageName.parse( "sonatype/nexus3:" + System.getProperty("nexus.docker.version", "latest") );
+    private static final DockerImageName IMAGE = DockerImageName.parse("sonatype/nexus3:" + System.getProperty("nexus.docker.version", "latest"));
 
     private final ConcurrentMap<String, NexusAPI> clientAPIs;
     private volatile String adminPassword;
@@ -52,13 +55,9 @@ public class NexusServer extends GenericContainer<NexusServer> {
     }
 
     public void mountFile(final MountableFile mf, String targetDir) {
-        if (!targetDir.endsWith("/")) {
-            targetDir += "/";
-        }
-        String path = mf.getFilesystemPath();
-        int s = path.lastIndexOf('/');
-        String fileName = s >= 0 ? path.substring(s + 1) : path;
-        withCopyFileToContainer(mf, targetDir + fileName);
+        File file = new File(mf.getFilesystemPath());
+        Path path = Paths.get(targetDir, file.getName());
+        withCopyFileToContainer(mf, path.toFile().getAbsolutePath());
     }
 
     public String getDefaultAdminPassword() {
@@ -75,6 +74,7 @@ public class NexusServer extends GenericContainer<NexusServer> {
         }
         return result;
     }
+
     public void setDefaultAdminPassword(final String adminPassword) {
         this.adminPassword = adminPassword;
     }
