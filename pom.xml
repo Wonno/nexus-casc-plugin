@@ -361,6 +361,89 @@
                     <allureDownloadUrl>https://repo.maven.apache.org/maven2/io/qameta/allure/allure-commandline/${allure.version}/allure-commandline-${allure.version}.zip</allureDownloadUrl>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>buildnumber-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>docker-image-timestamp</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>create-timestamp</goal>
+                        </goals>
+                        <configuration>
+                            <timestampFormat>yyyy-MM-dd'T'HH:mm:ss'Z'XXX</timestampFormat>
+                            <timestampPropertyName>docker.image.timestamp</timestampPropertyName>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>io.fabric8</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+                <version>0.42.0</version>
+                <executions>
+                    <execution>
+                        <id>docker-nexus-with-plugin-image-build</id>
+                        <goals>
+                            <goal>build</goal>
+                            <goal>tag</goal>
+                        </goals>
+                        <configuration>
+                            <images>
+                                <image>
+                                    <name>sonatype-nexus-casc:${project.version}</name>
+                                    <build>
+                                        <from>sonatype/nexus3:${nexus.docker.version}</from>
+                                        <labels>
+                                            <org.opencontainers.image.created>${docker.image.timestamp}
+                                            </org.opencontainers.image.created>
+                                            <org.opencontainers.image.url>${project.url}</org.opencontainers.image.url>
+                                            <org.opencontainers.image.version>${project.version}
+                                            </org.opencontainers.image.version>
+                                            <org.opencontainers.image.licenses>Container licensing information.
+                                            </org.opencontainers.image.licenses>
+                                            <org.opencontainers.image.title>Sonatype Nexus with CASC plugin
+                                            </org.opencontainers.image.title>
+                                            <org.opencontainers.image.source>${project.scm.connection}
+                                            </org.opencontainers.image.source>
+                                            <org.opencontainers.image.revision>: Source control revision identifier for
+                                                the packaged software
+                                            </org.opencontainers.image.revision>
+                                            <org.opencontainers.image.base.name>
+                                                sonatype/nexus3:${nexus.docker.version}
+                                            </org.opencontainers.image.base.name>
+                                            <io.github.asharapov.nexus.nexus-casc-plugin.healthz>
+                                                /service/rest/v1/status/check
+                                            </io.github.asharapov.nexus.nexus-casc-plugin.healthz>
+                                            <io.github.asharapov.nexus.nexus-casc-plugin.docker.run>docker run -name
+                                                CASC-Nexus -p 8081:8081 sonatype-nexus-casc:${project.version}
+                                            </io.github.asharapov.nexus.nexus-casc-plugin.docker.run>
+                                        </labels>
+                                        <tags>
+                                            <tag>latest</tag>
+                                            <tag>${project.version}</tag>
+                                        </tags>
+                                        <assembly>
+                                            <inline>
+                                                <files>
+                                                    <file>
+                                                        <source>
+                                                            ${project.build.directory}/nexus-casc-plugin-${project.version}-bundle.kar
+                                                        </source>
+                                                    </file>
+                                                </files>
+                                            </inline>
+                                            <targetDir>/opt/sonatype/nexus/deploy</targetDir>
+                                        </assembly>
+                                    </build>
+                                </image>
+                            </images>
+                            <verbose>false</verbose>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
